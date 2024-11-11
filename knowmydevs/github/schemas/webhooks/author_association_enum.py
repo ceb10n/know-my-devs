@@ -1,0 +1,13 @@
+from enum import StrEnum, unique
+
+
+@unique
+class AuthorAssociationEnum(StrEnum):
+    COLLABORATOR = "COLLABORATOR"
+    CONTRIBUTOR = "CONTRIBUTOR"
+    FIRST_TIMER = "FIRST_TIMER"
+    FIRST_TIME_CONTRIBUTOR = "FIRST_TIME_CONTRIBUTOR"
+    MANNEQUIN = "MANNEQUIN"
+    MEMBER = "MEMBER"
+    NONE = "NONE"
+    OWNER = "OWNER"
