@@ -2,6 +2,6 @@ from enum import StrEnum, unique
 
 
 @unique
-class PullRequestStatus(StrEnum):
+class PullRequestState(StrEnum):
     OPEN = "open"
     CLOSED = "closed"
