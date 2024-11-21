@@ -8,11 +8,10 @@ from sqlmodel import Session
 
 from knowmydevs.app_logger import logger
 from knowmydevs.core.config import app_config
-from knowmydevs.core.errors import BadRequestError
 from knowmydevs.core.utils import str_utils
 
 type WebhookResponse = Callable[
-    [type[BaseModel], Session], Coroutine[type[BaseModel]]
+    [dict[str, Any], Session], Coroutine[type[BaseModel]]
 ]
 
 
@@ -26,19 +25,17 @@ async def handle_webhook(
     )
 
     if not is_request_valid:
-        logger.warning(
-            f"Received an invalid request. Signature {request_details.x_hub_signature_256}"
-        )
-        raise BadRequestError("Invalid payload")
+        logger.warning("Received a non valid request")
+        pass
 
-    model = _get_model_for_event(event, payload)
+    model = _get_model_for_event(event)
     handler = getattr(globals()[f"{event}_service"], "handle")
 
     return handler, model
 
 
-def _get_model_for_event(event: str, payload: dict[str, Any]) -> type[BaseModel]:
+def _get_model_for_event(event: str) -> type[BaseModel]:
     event_name_in_pascal = str_utils.snake_to_pascal(event)
     model_name = f"{event_name_in_pascal}Event"
 
-    return getattr(payloads, model_name)(**payload)
+    return getattr(payloads, model_name)
