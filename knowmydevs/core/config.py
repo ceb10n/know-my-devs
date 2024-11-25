@@ -23,7 +23,8 @@ class AppConfig(BaseSettings):
         return self.environment == "local"
 
     def in_observable_environment(self) -> bool:
-        return self.environment not in ("local", "test")
+        return True
+        # return self.environment not in ("local", "test")
 
 
 app_config = AppConfig()

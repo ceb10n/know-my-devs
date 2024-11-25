@@ -14,8 +14,8 @@ router = APIRouter()
 async def handle_webhook(
     request: Request,
     payload: dict[str, Any],
-    headers: Annotated[WebhookHeaders, Header()],
     background_tasks: BackgroundTasks,
+    headers: Annotated[WebhookHeaders, Header()],
     session: Session = Depends(get_session)
 ):
     body = await request.body()

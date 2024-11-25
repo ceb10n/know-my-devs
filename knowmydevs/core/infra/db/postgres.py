@@ -1,7 +1,7 @@
 from sqlalchemy import Engine
 from sqlalchemy.engine import URL
 from sqlmodel import Session, SQLModel, create_engine
-import psycopg2
+
 from knowmydevs.app_logger import logger
 from knowmydevs.core.config import app_config
 
@@ -11,10 +11,12 @@ _engine: Engine | None
 def get_session() -> Engine:
     global _engine
 
+    logger.debug(f"Engine -> {_engine}")
+
     if _engine:
         yield Session(_engine)
-
-    raise Exception("Engine is not initialized")
+    else:
+        raise Exception("Engine is not initialized")
 
 
 def init_app():
