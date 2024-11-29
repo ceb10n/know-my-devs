@@ -12,7 +12,7 @@ async def handle(event: PullRequestEvent, session: Session) -> None:
     with logfire.span("Github Pull Request Event"):
         pr_dict = adapt(event)
 
-        pr = find_pull_request_by_id(event.pull_request.id)
+        pr = find_pull_request_by_id(event.pull_request.id, session)
 
         if pr:
             logger.debug(f"Updating Pull Request {event.pull_request.id}")
