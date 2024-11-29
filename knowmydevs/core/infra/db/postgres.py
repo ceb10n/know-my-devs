@@ -11,8 +11,6 @@ _engine: Engine | None
 def get_session() -> Engine:
     global _engine
 
-    logger.debug(f"Engine -> {_engine}")
-
     if _engine:
         yield Session(_engine)
     else:
@@ -34,5 +32,7 @@ def init_app():
     _engine = create_engine(url)
 
     if app_config.is_local_environment():
-        logger.info("Creating databases")
+        logger.info("Creating databases in local environment")
         SQLModel.metadata.create_all(_engine)
+
+    logger.info("Database intialized")

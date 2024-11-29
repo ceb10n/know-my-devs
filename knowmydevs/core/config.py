@@ -1,3 +1,5 @@
+import logging
+
 from pydantic import HttpUrl, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,6 +13,7 @@ class AppConfig(BaseSettings):
     environment: str = "local"
     gh_token: SecretStr
     logfire_token: SecretStr
+    log_level: int = logging.INFO
     pg_database: str
     pg_host: str
     pg_port: int
