@@ -12,12 +12,8 @@ class PullRequest(SQLModel, table=True):
     url: str = Field(max_length=500)
     state: PullRequestState = Field(sa_type=String, max_length=10)
     title: str = Field(max_length=500)
-    opened_by: int = Field(
-        sa_type=BigInteger, foreign_key="users.id", index=True
-    )
-    merged_by: int | None = Field(
-        None, sa_type=BigInteger, foreign_key="users.id", index=True
-    )
+    opened_by: int = Field(sa_type=BigInteger, index=True)
+    merged_by: int | None = Field(None, sa_type=BigInteger, index=True)
     merged: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime | None = Field(None)

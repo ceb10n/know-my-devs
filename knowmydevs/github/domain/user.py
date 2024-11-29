@@ -9,3 +9,4 @@ class User(SQLModel, table=True):
     name: str | None = Field(max_length=150)
     email: str | None = Field(max_length=150)
     avatar_url: str = Field(max_length=200)
+    

@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Header, Request
+from fastapi import APIRouter, Depends, Header, Request
 from gh_hooks_utils.headers import WebhookHeaders
 from sqlmodel import Session
 
@@ -10,15 +10,12 @@ from knowmydevs.github.services.webhooks import webhook_service
 router = APIRouter()
 
 
-@router.post("/webhooks")
+@router.post("/webhooks", status_code=204)
 async def handle_webhook(
     request: Request,
     payload: dict[str, Any],
     headers: Annotated[WebhookHeaders, Header()],
-    background_tasks: BackgroundTasks,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ):
     body = await request.body()
-    handler, model = await webhook_service.handle_webhook(payload, body, headers)
-
-    background_tasks.add_task(handler, model, session)
+    await webhook_service.handle_webhook(payload, body, headers, session)

@@ -1,6 +1,8 @@
+import importlib
 from collections.abc import Callable, Coroutine
 from typing import Any
 
+import logfire
 from gh_hooks_utils import payloads, validators
 from gh_hooks_utils.headers import WebhookHeaders
 from pydantic import BaseModel
@@ -17,27 +19,44 @@ type WebhookResponse = Callable[
 
 
 async def handle_webhook(
-    payload: dict[str, Any], body: bytes, request_details: WebhookHeaders
+    payload: dict[str, Any],
+    body: bytes,
+    request_details: WebhookHeaders,
+    session: Session,
 ) -> WebhookResponse:
-    event = request_details.x_github_event.lower()
+    logger.info(f"Received payload -> {payload}")
 
-    is_request_valid = validators.is_signature_valid(
-        body, app_config.gh_token, request_details.x_hub_signature_256
-    )
+    with logfire.span("Github Webhook Event"):
+        event = request_details.x_github_event.lower()
+        is_request_valid = True
 
-    if not is_request_valid:
-        logger.warning(
-            f"Received an invalid request. Signature {request_details.x_hub_signature_256}"
+        # remove the validation for local environment to make
+        # local testing easier
+        if not app_config.is_local_environment():
+            is_request_valid = validators.is_signature_valid(
+                body,
+                app_config.gh_token.get_secret_value(),
+                request_details.x_hub_signature_256,
+            )
+
+        if not is_request_valid:
+            logger.warning(
+                f"Received an invalid request. Signature {request_details.x_hub_signature_256}"
+            )
+            raise BadRequestError("Invalid payload")
+
+        model = _get_model_for_event(event, payload)
+        module = importlib.import_module(
+            f"knowmydevs.github.services.webhooks.{event}_service"
         )
-        raise BadRequestError("Invalid payload")
+        handler = getattr(module, "handle")
 
-    model = _get_model_for_event(event, payload)
-    handler = getattr(globals()[f"{event}_service"], "handle")
-
-    return handler, model
+        await handler(model, session)
 
 
-def _get_model_for_event(event: str, payload: dict[str, Any]) -> type[BaseModel]:
+def _get_model_for_event(
+    event: str, payload: dict[str, Any]
+) -> type[BaseModel]:
     event_name_in_pascal = str_utils.snake_to_pascal(event)
     model_name = f"{event_name_in_pascal}Event"
 
