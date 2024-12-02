@@ -1,5 +1,5 @@
 import importlib
-from collections.abc import Callable, Coroutine
+from types import ModuleType
 from typing import Any
 
 import logfire
@@ -13,26 +13,25 @@ from knowmydevs.core.config import app_config
 from knowmydevs.core.errors import BadRequestError
 from knowmydevs.core.utils import str_utils
 
-type WebhookResponse = Callable[
-    [type[BaseModel], Session], Coroutine[type[BaseModel]]
-]
-
 
 async def handle_webhook(
     payload: dict[str, Any],
     body: bytes,
     request_details: WebhookHeaders,
     session: Session,
-) -> WebhookResponse:
+) -> None:
     logger.info(f"Received payload -> {payload}")
+    event = request_details.x_github_event.lower()
 
-    with logfire.span("Github Webhook Event"):
-        event = request_details.x_github_event.lower()
+    with logfire.span(f"Github Webhook Event: {event}"):
         is_request_valid = True
 
         # remove the validation for local environment to make
         # local testing easier
-        if not app_config.is_local_environment():
+        if (
+            not app_config.is_local_environment()
+            and not app_config.is_test_environment()
+        ):
             is_request_valid = validators.is_signature_valid(
                 body,
                 app_config.gh_token.get_secret_value(),
@@ -49,9 +48,8 @@ async def handle_webhook(
         module = importlib.import_module(
             f"knowmydevs.github.services.webhooks.{event}_service"
         )
-        handler = getattr(module, "handle")
 
-        await handler(model, session)
+        await _call_handler_for_event(module, model, session)
 
 
 def _get_model_for_event(
@@ -60,4 +58,14 @@ def _get_model_for_event(
     event_name_in_pascal = str_utils.snake_to_pascal(event)
     model_name = f"{event_name_in_pascal}Event"
 
+    logger.debug(f"Using model: {model_name}")
+
     return getattr(payloads, model_name)(**payload)
+
+
+async def _call_handler_for_event(
+    module: ModuleType, model: type[BaseModel], session: Session
+) -> None:
+    handler = getattr(module, "handle")
+
+    await handler(model, session)
