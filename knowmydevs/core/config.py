@@ -22,6 +22,9 @@ class AppConfig(BaseSettings):
     sentry_dns: HttpUrl
     sentry_trace_rate: float
 
+    def is_test_environment(self) -> bool:
+        return self.environment == "test"
+
     def is_local_environment(self) -> bool:
         return self.environment == "local"
 
