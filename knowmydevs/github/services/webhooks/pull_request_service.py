@@ -9,10 +9,11 @@ from knowmydevs.github.domain import PullRequest
 
 
 async def handle(event: PullRequestEvent, session: Session) -> None:
+    logger.info(f"Handling Pull Request Event for PR {event.pull_request.id}")
     with logfire.span("Github Pull Request Event"):
         pr_dict = adapt(event)
 
-        pr = find_pull_request_by_id(event.pull_request.id, session)
+        pr = find_pull_request_by_id(id=event.pull_request.id, session=session)
 
         if pr:
             logger.debug(f"Updating Pull Request {event.pull_request.id}")
