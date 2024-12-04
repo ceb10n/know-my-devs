@@ -5,7 +5,7 @@ from knowmydevs.github.domain import User
 
 
 def add_user(user: User, session: Session) -> None:
-    with logfire.span("Create user {id}", user.id):
+    with logfire.span("Create user {id}", id=user.id):
         session.add(user)
         session.commit()
 

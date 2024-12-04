@@ -26,16 +26,11 @@ async def handle_webhook(
     with logfire.span(f"Github Webhook Event: {event}"):
         is_request_valid = True
 
-        # remove the validation for local environment to make
-        # local testing easier
-        if (
-            not app_config.is_local_environment()
-            and not app_config.is_test_environment()
-        ):
+        if _should_validate_signature():
             is_request_valid = validators.is_signature_valid(
                 body,
                 app_config.gh_token.get_secret_value(),
-                request_details.x_hub_signature_256,
+                str(request_details.x_hub_signature_256),
             )
 
         if not is_request_valid:
@@ -50,6 +45,13 @@ async def handle_webhook(
         )
 
         await _call_handler_for_event(module, model, session)
+
+
+def _should_validate_signature() -> bool:
+    return (
+        not app_config.is_local_environment()
+        and not app_config.is_test_environment()
+    )
 
 
 def _get_model_for_event(

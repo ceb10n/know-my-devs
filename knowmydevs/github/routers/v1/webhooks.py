@@ -16,6 +16,6 @@ async def handle_webhook(
     payload: dict[str, Any],
     headers: Annotated[WebhookHeaders, Header()],
     session: Session = Depends(get_session),
-):
+) -> None:
     body = await request.body()
     await webhook_service.handle_webhook(payload, body, headers, session)

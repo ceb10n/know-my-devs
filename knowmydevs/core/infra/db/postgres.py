@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 from sqlalchemy import Engine
 from sqlalchemy.engine import URL
 from sqlmodel import Session, SQLModel, create_engine
@@ -8,7 +10,7 @@ from knowmydevs.core.config import app_config
 _engine: Engine | None
 
 
-def get_session() -> Engine:
+def get_session() -> Iterable[Session]:
     global _engine
 
     if _engine:
@@ -17,7 +19,7 @@ def get_session() -> Engine:
         raise Exception("Engine is not initialized")
 
 
-def init_app():
+def init_app() -> None:
     logger.info("Initializing postgres connection")
     global _engine
 

@@ -88,6 +88,7 @@ indent-style = 'space'
 
 [tool.mypy]
 python_version = '3.12'
+plugins = ['pydantic.mypy']
 show_error_codes = true
 follow_imports = 'silent'
 strict_optional = true
