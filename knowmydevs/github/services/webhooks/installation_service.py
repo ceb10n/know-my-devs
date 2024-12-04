@@ -6,12 +6,19 @@ from gh_hooks_utils.payloads import InstallationEvent
 from sqlmodel import Session, select
 
 from knowmydevs.app_logger import logger
+from knowmydevs.core.utils import date_utils
 from knowmydevs.github.domain import Installation
 
 
 async def handle(event: InstallationEvent, session: Session) -> None:
-    logger.info(f"Handling Installation Event for {event.installation.id}")
     with logfire.span("Github Installation Event"):
+        if not event.installation:
+            logger.warning("Installation is not present in event")
+            return None
+
+        logger.info(
+            f"Handling Installation Event for {event.installation.id}. Event sent by {event.sender.name}"
+        )
         install_dict = adapt(event)
 
         installation = find_installation_by_id(
@@ -48,7 +55,10 @@ def find_installation_by_id(id: int, session: Session) -> Installation | None:
 
 
 def adapt(install_event: InstallationEvent) -> dict[str, Any]:
-    optional_values = {}
+    optional_values: dict[str, Any] = {}
+
+    if not install_event.installation:
+        raise ValueError("Field installation is required")
 
     if install_event.enterprise:
         optional_values["enterprise_id"] = install_event.enterprise.id
@@ -58,11 +68,26 @@ def adapt(install_event: InstallationEvent) -> dict[str, Any]:
         optional_values["organization_id"] = install_event.organization.id
         optional_values["organization_login"] = install_event.organization.login
 
+    if install_event.installation.account:
+        optional_values["account_id"] = install_event.installation.account.id
+        optional_values["account_login"] = (
+            install_event.installation.account.login
+        )
+
     return {
         **optional_values,
         "id": install_event.installation.id,
+        "app_id": install_event.installation.app_id,
+        "app_slug": install_event.installation.app_slug,
+        "target_type": install_event.installation.target_type,
         "sender_id": install_event.sender.id,
         "sender_name": install_event.sender.name,
         "sender_login": install_event.sender.login,
         "installed_at": datetime.datetime.now(datetime.UTC),
+        "updated_at": date_utils.maybe_str_to_datetime(
+            install_event.installation.updated_at
+        ),
+        "suspended_at": date_utils.maybe_str_to_datetime(
+            install_event.installation.suspended_at
+        ),
     }
