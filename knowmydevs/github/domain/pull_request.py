@@ -8,14 +8,25 @@ from .pull_request_state import PullRequestState
 class PullRequest(SQLModel, table=True):
     __tablename__ = "pull_requests"
 
-    id: int = Field(primary_key=True, sa_type=BigInteger)
-    url: str = Field(max_length=500)
+    id: int = Field(..., primary_key=True, sa_type=BigInteger)
+    installation_id: int = Field(
+        ..., sa_type=BigInteger, foreign_key="installations.id"
+    )
+
+    merged: bool
+    merged_by_id: int | None = Field(None, sa_type=BigInteger, index=True)
+    merged_by_login: str = Field(..., max_length=150)
+    number: int = Field(..., sa_type=BigInteger)
+    opened_by_id: int = Field(sa_type=BigInteger, index=True)
+    opened_by_login: str = Field(..., max_length=150)
     state: PullRequestState = Field(sa_type=String, max_length=10)
     title: str = Field(max_length=500)
-    opened_by: int = Field(sa_type=BigInteger, index=True)
-    merged_by: int | None = Field(None, sa_type=BigInteger, index=True)
-    merged: bool
+    url: str = Field(max_length=500)
+
     created_at: datetime.datetime
     updated_at: datetime.datetime | None = Field(None)
     closed_at: datetime.datetime | None = Field(None)
     merged_at: datetime.datetime | None = Field(None)
+    merge_commit_sha: str | None = Field(None, max_length=200)
+    repository_id: int = Field(..., sa_type=BigInteger, index=True)
+    repository_name: str = Field(..., max_length=250, index=True)
