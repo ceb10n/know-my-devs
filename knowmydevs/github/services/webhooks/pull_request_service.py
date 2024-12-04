@@ -81,6 +81,7 @@ def adapt(pr_event: PullRequestEvent) -> dict[str, Any]:
         "state": pr_event.pull_request.state,
         "title": pr_event.pull_request.title,
         "merged": pr_event.pull_request.merged,
+        "merge_commit_sha": pr_event.pull_request.merge_commit_sha,
         "created_at": pr_event.pull_request.created_at,
         "updated_at": pr_event.pull_request.updated_at,
         "closed_at": pr_event.pull_request.closed_at,
