@@ -24,9 +24,9 @@ def config_mock() -> AppConfig:
     )
 
 
-def headers_mock() -> WebhookHeaders:
+def headers_mock(event: EventsEnum) -> WebhookHeaders:
     return WebhookHeaders(
-        x_github_event=EventsEnum.INSTALLATION.value,
+        x_github_event=event.value,
         x_github_hook_id=str(uuid.uuid4()),
         x_github_delivery=str(uuid.uuid4()),
         user_agent="GitHub-Hookshot/testing",
