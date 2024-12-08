@@ -10,6 +10,8 @@ class AppConfig(BaseSettings):
     )
 
     app_name: str
+    aws_region: str
+    aws_cognito_pool_id: str
     environment: str = "local"
     gh_token: SecretStr
     logfire_token: SecretStr
