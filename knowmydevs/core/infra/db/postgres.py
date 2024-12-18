@@ -19,7 +19,7 @@ def get_session() -> Iterable[Session]:
         raise Exception("Engine is not initialized")
 
 
-def init_app() -> None:
+def init_app() -> Engine:
     logger.info("Initializing postgres connection")
     global _engine
 
@@ -38,3 +38,5 @@ def init_app() -> None:
         SQLModel.metadata.create_all(_engine)
 
     logger.info("Database intialized")
+
+    return _engine

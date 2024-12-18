@@ -12,3 +12,7 @@ def maybe_str_to_datetime(value: str | None) -> datetime.datetime | None:
         return value
 
     return datetime.datetime.fromisoformat(value)
+
+
+def days_ago(*, days: int) -> datetime.date:
+    return datetime.date.today() - datetime.timedelta(days=days)

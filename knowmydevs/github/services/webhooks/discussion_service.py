@@ -63,6 +63,8 @@ def adapt(discussion_event: DiscussionEvent) -> dict[str, Any]:
         user = discussion_event.discussion.answer_chosen_by
         optional_values["answer_chosen_by_id"] = user.id
         optional_values["answer_chosen_by_login"] = user.login
+        optional_values["answer_chosen_by_avatar_url"] = user.avatar_url
+        optional_values["answer_chosen_by_html_url"] = user.html_url
 
     if discussion_event.repository:
         repository = discussion_event.repository

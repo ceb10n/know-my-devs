@@ -5,7 +5,8 @@ from gh_hooks_utils import EventsEnum
 
 from knowmydevs.github.services.webhooks import webhook_service
 
-from ...data.discussion.data import discussion_answered, dicussion_closed
+from ...data.discussion.data import dicussion_closed, discussion_answered
+from ...data.discussion_comment.data import discussion_comment_created
 from ...data.installation.data import install_event_all_repos
 from .mocks import config_mock, headers_mock
 from .webhook_service_mock import (
@@ -31,6 +32,22 @@ async def test_handle_webhook_for_installation_created():
         pytest.fail(
             f"test_handle_webhook_for_installation_created failed: {ex}"
         )
+
+
+@mock.patch(TARGET_CALL_HANDLER, mock_call_handler)
+@mock.patch(TARGET_CONFIG, config_mock())
+@pytest.mark.asyncio
+async def test_handle_webhook_for_discussion_comment_created():
+    try:
+        await webhook_service.handle_webhook(
+            discussion_comment_created,
+            b"",
+            headers_mock(EventsEnum.DISCUSSION_COMMENT),
+            None,
+        )
+
+    except Exception as ex:
+        pytest.fail(f"test_handle_webhook_for_discussion_created failed: {ex}")
 
 
 @mock.patch(TARGET_CALL_HANDLER, mock_call_handler)

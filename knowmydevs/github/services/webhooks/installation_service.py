@@ -3,11 +3,16 @@ from typing import Any
 
 import logfire
 from gh_hooks_utils.payloads import InstallationEvent
+from gh_hooks_utils.payloads.install.installation_action_enum import (
+    InstallationActionEnum,
+)
 from sqlmodel import Session, select
 
 from knowmydevs.app_logger import logger
+from knowmydevs.core.auth import cognito
 from knowmydevs.core.utils import date_utils
 from knowmydevs.github.domain import Installation
+from knowmydevs.github.services import app_client_service
 
 
 async def handle(event: InstallationEvent, session: Session) -> None:
@@ -37,6 +42,18 @@ async def handle(event: InstallationEvent, session: Session) -> None:
             installation = Installation(**install_dict)
 
         session.add(installation)
+        session.flush()
+
+        if event.action == InstallationActionEnum.CREATED:
+            app_client = cognito.create_app_client(installation.id)
+            app_client_service.create_app_client(
+                installation.id,
+                app_client.client_name,
+                app_client.client_id,
+                app_client.client_secret,
+                session,
+            )
+
         session.commit()
 
         logger.info(
