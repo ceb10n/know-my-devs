@@ -45,10 +45,15 @@ async def handle(event: InstallationEvent, session: Session) -> None:
         session.flush()
 
         if event.action == InstallationActionEnum.CREATED:
-            app_secret = cognito.create_app_client(installation.id)
+            app_client = cognito.create_app_client(installation.id)
             app_client_service.create_app_client(
-                installation.id, app_secret, session
+                installation.id,
+                app_client.client_name,
+                app_client.client_id,
+                app_client.client_secret,
+                session,
             )
+
         session.commit()
 
         logger.info(
