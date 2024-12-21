@@ -46,6 +46,13 @@ async def handle(event: InstallationEvent, session: Session) -> None:
 
         if event.action == InstallationActionEnum.CREATED:
             app_client = cognito.create_app_client(installation.id)
+
+            if not app_client:
+                logger.error(
+                    f"Failed to create app client for installation {installation.id}"
+                )
+                return None
+
             app_client_service.create_app_client(
                 installation.id,
                 app_client.client_name,

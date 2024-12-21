@@ -7,6 +7,7 @@ from knowmydevs.auth.payloads import TokenCredential, TokenForm
 from knowmydevs.auth.responses import TokenResponse
 from knowmydevs.core.auth import cognito, kms
 from knowmydevs.core.auth.token import jwtfy
+from knowmydevs.core.errors import UnauthorizedError
 
 header = jwtfy(json.dumps({"alg": "RS256", "typ": "JWT", "kid": "knowmydevs"}))
 
@@ -16,6 +17,10 @@ async def issue_token(
 ) -> TokenResponse:
     logger.info(f"Authenticating installation {credential.username}")
     app_client = cognito.find_app_client(credential.username)
+
+    if not app_client:
+        raise UnauthorizedError("Invalid credentials")
+
     _ = await cognito.client_credentials_auth(
         credential.username, credential.password
     )

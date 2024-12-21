@@ -10,7 +10,12 @@ from knowmydevs.github.domain import PullRequest
 
 async def handle(event: PullRequestEvent, session: Session) -> None:
     logger.info(f"Handling Pull Request Event for PR {event.pull_request.id}")
+
     with logfire.span("Github Pull Request Event"):
+        if not event.installation:
+            logger.warning("Installation not found in event")
+            return
+
         pr_dict = adapt(event)
 
         pr = find_pull_request_by_id(

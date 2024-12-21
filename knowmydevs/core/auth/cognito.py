@@ -42,6 +42,8 @@ def find_app_client(client_id: str) -> AppClient | None:
             logger.warning(f"Error looking for app client: {client_err}")
             span.record_exception(client_err)
 
+        return None
+
 
 def create_app_client(installation_id: int) -> AppClient | None:
     logger.debug(f"Creating app client for installation {installation_id}")
@@ -64,3 +66,5 @@ def create_app_client(installation_id: int) -> AppClient | None:
         except ClientError as client_err:
             logger.warning(f"Error creating app client: {client_err}")
             span.record_exception(client_err)
+
+        return None

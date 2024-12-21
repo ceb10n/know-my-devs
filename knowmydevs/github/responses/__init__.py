@@ -1,4 +1,4 @@
-__all__ = ("DiscussionStatsResponse",)
+__all__ = ("DiscussionStatsResponse", "PullRequestStatsResponse")
 
 
-from .stats import DiscussionStatsResponse
+from .stats import DiscussionStatsResponse, PullRequestStatsResponse

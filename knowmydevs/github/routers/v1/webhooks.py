@@ -2,6 +2,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Header, Request
 from gh_hooks_utils.headers import WebhookHeaders
+from gh_hooks_utils.payloads import GithubWebhookEvent
 from sqlmodel import Session
 
 from knowmydevs.core.infra.db import get_session
@@ -13,7 +14,7 @@ router = APIRouter()
 @router.post("/webhooks", status_code=204)
 async def handle_webhook(
     request: Request,
-    payload: dict[str, Any],
+    payload: GithubWebhookEvent,
     headers: Annotated[WebhookHeaders, Header()],
     session: Session = Depends(get_session),
 ) -> None:

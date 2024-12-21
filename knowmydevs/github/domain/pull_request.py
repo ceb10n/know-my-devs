@@ -20,6 +20,7 @@ class PullRequest(SQLModel, table=True):
     merged_at: datetime.datetime | None = Field(None)
     merged_by_id: int | None = Field(None, sa_type=BigInteger, index=True)
     merged_by_login: str | None = Field(None, max_length=150)
+    merged_by_html_url: str | None = Field(None, max_length=1000)
     number: int = Field(..., sa_type=BigInteger)
     opened_by_id: int = Field(sa_type=BigInteger, index=True)
     opened_by_login: str = Field(..., max_length=150)
