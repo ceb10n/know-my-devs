@@ -2,8 +2,8 @@ import datetime
 from typing import Any
 
 from pydantic import ValidationError
-from sqlalchemy import Select, desc, select
-from sqlmodel import Session, func
+from sqlalchemy import Select
+from sqlmodel import Session, desc, func, select
 
 from knowmydevs.app_logger import logger
 from knowmydevs.core.errors import InternalError, UnauthorizedError
@@ -58,7 +58,7 @@ def overall_stats(
     return adapt(response)
 
 
-def adapt(response: list[tuple[Any]]) -> list[DiscussionStatsResponse]:
+def adapt(response: list[tuple[Any, ...]]) -> list[DiscussionStatsResponse]:
     try:
         return [
             DiscussionStatsResponse(
@@ -75,7 +75,9 @@ def adapt(response: list[tuple[Any]]) -> list[DiscussionStatsResponse]:
         logger.warning(
             f"Error mapping database results to DiscussionStatsResponse: {val_ex}"
         )
-        _raise_internal(val_ex)
+        raise InternalError(
+            "An error occurred while fetching discussions"
+        ) from val_ex
 
 
 def _add_filters_to_query(
@@ -87,11 +89,11 @@ def _add_filters_to_query(
     try:
         if from_date:
             statement = statement.where(
-                Discussion.answer_chosen_at >= from_date
+                Discussion.answer_chosen_at >= from_date  # type: ignore
             )
 
         if to_date:
-            statement = statement.where(Discussion.answer_chosen_at <= to_date)
+            statement = statement.where(Discussion.answer_chosen_at <= to_date)  # type: ignore
 
         if category_name:
             statement = statement.where(
@@ -101,8 +103,6 @@ def _add_filters_to_query(
         return statement
 
     except Exception as ex:
-        _raise_internal(ex)
-
-
-def _raise_internal(ex: type[Exception]) -> None:
-    raise InternalError("An error occurred while fetching discussions") from ex
+        raise InternalError(
+            "An error occurred while fetching discussions"
+        ) from ex

@@ -31,7 +31,7 @@ def get_public_key() -> bytes:
 
     except ClientError as cli_err:
         err_code = cli_err.response["Error"]["Code"]
-        err_msg = ["Error"]["Message"]
+        err_msg = cli_err.response["Error"]["Message"]
         logger.warning(f"Error getting kms public key: {err_code} - {err_msg}")
 
         raise InternalError("An internal error occurred. Sorry, it's on us.")
@@ -47,7 +47,7 @@ def get_public_key() -> bytes:
 
 
 @lru_cache
-def _get_kms_client():
+def _get_kms_client():  # type: ignore
     if not app_config.aws_region:
         raise ValueError("AWS Region is required")
 
@@ -61,6 +61,6 @@ def _get_kms_client():
 
     except ClientError as cli_err:
         err_code = cli_err.response["Error"]["Code"]
-        err_msg = ["Error"]["Message"]
+        err_msg = cli_err.response["Error"]["Message"]
 
         logger.warning(f"Error creating kms client: {err_code} - {err_msg}")

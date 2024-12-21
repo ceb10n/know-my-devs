@@ -15,7 +15,7 @@ from knowmydevs.core.utils import str_utils
 
 
 async def handle_webhook(
-    payload: dict[str, Any],
+    payload: payloads.GithubWebhookEvent,
     body: bytes,
     request_details: WebhookHeaders,
     session: Session,
@@ -55,7 +55,7 @@ def _should_validate_signature() -> bool:
 
 
 def _get_model_for_event(
-    event: str, payload: dict[str, Any]
+    event: str, payload: payloads.GithubWebhookEvent
 ) -> type[BaseModel]:
     event_name_in_pascal = str_utils.snake_to_pascal(event)
     model_name = f"{event_name_in_pascal}Event"

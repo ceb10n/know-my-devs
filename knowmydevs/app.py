@@ -2,7 +2,7 @@ import datetime
 
 from fastapi import FastAPI
 
-from knowmydevs import logger
+from knowmydevs import logger, version
 from knowmydevs.auth.routers import routers as auth_routers
 from knowmydevs.core.config import app_config
 from knowmydevs.core.handlers import error_handler
@@ -16,7 +16,22 @@ def create_app() -> FastAPI:
     logger.info(
         f"Starting {app_config.app_name} at {datetime.datetime.now(datetime.UTC)}"
     )
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI(
+        lifespan=lifespan,
+        title="Know My Devs",
+        summary="Github App to generate summary of PRs and Discussions",
+        version=version.VERSION,
+        contact={
+            "name": "Rafael de Oliveira Marques",
+            "url": "https://github.com/ceb10n",
+            "email": "rafaelomarques@gmail.com"
+        },
+        license_info={
+            "name": "MIT License",
+            "identifier": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        }
+    )   
     error_handler.init_app(app)
     engine = postgres.init_app()
     logfire_app.init_app(app, engine=engine)

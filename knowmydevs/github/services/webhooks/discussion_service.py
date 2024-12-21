@@ -54,10 +54,9 @@ def adapt(discussion_event: DiscussionEvent) -> dict[str, Any]:
     if not discussion_event.installation:
         raise ValueError("Field installation is required")
 
-    if discussion_event.answer:
-        answer = discussion_event.answer
-        optional_values["answer_by_id"] = answer.user.id
-        optional_values["answer_by_login"] = answer.user.login
+    if discussion_event.answer and discussion_event.answer.user:
+        optional_values["answer_by_id"] = discussion_event.answer.user.id
+        optional_values["answer_by_login"] = discussion_event.answer.user.login
 
     if discussion_event.discussion.answer_chosen_by:
         user = discussion_event.discussion.answer_chosen_by
@@ -72,7 +71,15 @@ def adapt(discussion_event: DiscussionEvent) -> dict[str, Any]:
         optional_values["repository_name"] = repository.name
 
     if discussion_event.discussion.state_reason:
-        optional_values["state_reason"] = discussion_event.discussion.state_reason.value,
+        optional_values["state_reason"] = (
+            discussion_event.discussion.state_reason.value,
+        )
+
+    if discussion_event.discussion.user:
+        optional_values["opened_by_id"] = (discussion_event.discussion.user.id,)
+        optional_values["opened_by_login"] = (
+            discussion_event.discussion.user.login,
+        )
 
     return {
         **optional_values,
@@ -83,8 +90,6 @@ def adapt(discussion_event: DiscussionEvent) -> dict[str, Any]:
         "number": discussion_event.discussion.number,
         "state": discussion_event.discussion.state.value,
         "title": discussion_event.discussion.title,
-        "opened_by_id": discussion_event.discussion.user.id,
-        "opened_by_login": discussion_event.discussion.user.login,
         "created_at": date_utils.maybe_str_to_datetime(
             discussion_event.discussion.created_at
         ),
