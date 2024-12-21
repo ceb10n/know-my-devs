@@ -2,7 +2,7 @@ import datetime
 from typing import Any
 
 from pydantic import ValidationError
-from sqlalchemy import desc, select, Select
+from sqlalchemy import Select, desc, select
 from sqlmodel import Session, func
 
 from knowmydevs.app_logger import logger
@@ -40,15 +40,6 @@ def overall_stats(
     statement = _add_filters_to_query(
         statement, from_date, to_date, category_name
     )
-
-    if from_date:
-        statement = statement.where(Discussion.answer_chosen_at >= from_date)
-
-    if to_date:
-        statement = statement.where(Discussion.answer_chosen_at <= to_date)
-
-    if category_name:
-        statement = statement.where(Discussion.category_name == category_name)
 
     statement = (
         statement.group_by(
@@ -108,6 +99,7 @@ def _add_filters_to_query(
             )
 
         return statement
+
     except Exception as ex:
         _raise_internal(ex)
 
