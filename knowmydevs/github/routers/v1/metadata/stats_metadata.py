@@ -1,17 +1,9 @@
-from typing import Any, TypedDict
-
 from knowmydevs.github.responses.stats import (
     DiscussionStatsResponse,
     PullRequestStatsResponse,
 )
 
-
-class Metadata(TypedDict):
-    summary: str
-    description: str
-    operation_id: str
-    responses: dict[str | int, dict[str, Any]]
-
+from .types import Metadata
 
 discussion_metadata: Metadata = {
     "summary": "List stats from discussions",

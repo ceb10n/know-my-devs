@@ -19,7 +19,7 @@ from knowmydevs.github.routers.v1.queries.stats import (
 )
 from knowmydevs.github.services.stats import discussion_service, pr_service
 
-router = APIRouter(tags=["Stats"])
+router = APIRouter(prefix="/stats", tags=["Stats"])
 
 
 @router.get("/discussions", **discussion_metadata)
