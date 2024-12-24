@@ -7,7 +7,7 @@ from gh_hooks_utils.payloads.discussions import (
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class DiscussionCreatedResponse(BaseModel):
+class DiscussionResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     id: int = Field(

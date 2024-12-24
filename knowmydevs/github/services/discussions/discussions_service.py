@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session, select
+from sqlmodel import Session, asc, select, delete
 
 from knowmydevs.app_logger import logger
 from knowmydevs.core.errors import BadRequestError, InternalError, NotFoundError
@@ -8,12 +8,12 @@ from knowmydevs.github.payloads.discussions import (
     CreateDiscussionPayload,
     UpdateDiscussionPayload,
 )
-from knowmydevs.github.responses.discussions import DiscussionCreatedResponse
+from knowmydevs.github.responses.discussions import DiscussionResponse
 
 
 def create_discussion(
     discussion: CreateDiscussionPayload, installation_id: int, session: Session
-) -> DiscussionCreatedResponse:
+) -> DiscussionResponse:
     logger.info(
         f"Creating discussion {discussion.id} for installation {installation_id}"
     )
@@ -37,7 +37,65 @@ def create_discussion(
 
         raise InternalError("Error creating discussion") from ex
 
-    return DiscussionCreatedResponse(**discussion.model_dump())
+    return DiscussionResponse(**discussion.model_dump())
+
+
+def delete_discussion(
+    discussion_id: int,
+    installation_id: int,
+    session: Session,
+) -> None:
+    logger.info(
+        f"Deleting discussion {discussion_id} for installation {installation_id}"
+    )
+    statement = delete(Discussion).where(
+        Discussion.id == discussion_id
+        and Discussion.installation_id == installation_id
+    )
+
+    session.exec(statement)
+    session.commit()
+
+
+def find_discussion_by_id(
+    discussion_id: int,
+    installation_id: int,
+    session: Session,
+) -> DiscussionResponse:
+    logger.info(
+        f"Looking for discussion {discussion_id} for installation {installation_id}"
+    )
+    statement = select(Discussion).where(
+        Discussion.id == discussion_id
+        and Discussion.installation_id == installation_id
+    )
+    existing_discussion = session.exec(statement).one_or_none()
+
+    if not existing_discussion:
+        raise NotFoundError(f"Discussion with id {discussion_id} not found")
+
+    return DiscussionResponse(**existing_discussion.model_dump())
+
+
+def list_discussions(
+    page: int,
+    limit: int,
+    installation_id: int,
+    session: Session,
+) -> list[DiscussionResponse]:
+    logger.info(f"Listing discussions for installation {installation_id}")
+
+    statement = (
+        select(Discussion)
+        .where(Discussion.installation_id == installation_id)
+        .order_by(asc(Discussion.created_at))
+        .limit(limit)
+        .offset((page - 1) * limit)
+    )
+
+    discussions = session.exec(statement).all()
+
+    return [DiscussionResponse(**d.model_dump()) for d in discussions]
 
 
 def update_discussion(
@@ -45,19 +103,25 @@ def update_discussion(
     discussion: UpdateDiscussionPayload,
     installation_id: int,
     session: Session,
-) -> DiscussionCreatedResponse:
+) -> DiscussionResponse:
     logger.info(
         f"Updating discussion {discussion_id} for installation {installation_id}"
     )
 
-    statement = select(Discussion).where(Discussion.id == discussion_id)
+    statement = select(Discussion).where(
+        Discussion.id == discussion_id
+        and Discussion.installation_id == installation_id
+    )
     existing_discussion = session.exec(statement).one_or_none()
+
+    logger.debug(f"Discussion found: {existing_discussion.model_dump()}")
 
     if not existing_discussion:
         raise NotFoundError(f"Discussion with id {discussion_id} not found")
 
     for key, value in discussion.model_dump().items():
         try:
+            logger.debug(f"Updating property {key} with value {value}")
             setattr(existing_discussion, key, value)
 
         except Exception as ex:
@@ -66,9 +130,16 @@ def update_discussion(
 
             raise BadRequestError(err_msg) from ex
 
+    logger.debug(
+        f"Saving updated discussion: {existing_discussion.model_dump()}"
+    )
+
     try:
+        response = DiscussionResponse(**existing_discussion.model_dump())
         session.add(existing_discussion)
         session.commit()
+
+        return response
 
     except Exception as ex:
         err_msg = f"Error updating discussion with id {discussion_id}"
@@ -76,5 +147,3 @@ def update_discussion(
         session.rollback()
 
         raise InternalError(err_msg) from ex
-
-    return DiscussionCreatedResponse(**discussion.model_dump())

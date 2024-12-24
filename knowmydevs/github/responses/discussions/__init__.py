@@ -1,5 +1,4 @@
-__all__ = ("DiscussionCreatedResponse", "DiscussionUpdatedResponse")
+__all__ = ("DiscussionResponse",)
 
 
-from .discussion_created_response import DiscussionCreatedResponse
-from .discussion_updated_response import DiscussionUpdatedResponse
+from .discussion_response import DiscussionResponse
