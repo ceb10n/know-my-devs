@@ -3,11 +3,13 @@ from fastapi import FastAPI
 from knowmydevs.core.errors import (
     BadRequestError,
     InternalError,
+    NotFoundError,
     UnauthorizedError,
 )
 
 from .bad_request_handler import bad_request_handler
 from .internal_error_handler import internal_error_handler
+from .not_found_handler import not_found_handler
 from .unauthorized_handler import unauthorized_handler
 
 
@@ -20,6 +22,11 @@ def init_app(app: FastAPI) -> None:
     app.add_exception_handler(
         exc_class_or_status_code=InternalError,
         handler=internal_error_handler,  # type: ignore[arg-type]
+    )
+
+    app.add_exception_handler(
+        exc_class_or_status_code=NotFoundError,
+        handler=not_found_handler,  # type: ignore[arg-type]
     )
 
     app.add_exception_handler(
