@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session, asc, select, delete
+from sqlmodel import Session, asc, delete, select
 
 from knowmydevs.app_logger import logger
 from knowmydevs.core.errors import BadRequestError, InternalError, NotFoundError
