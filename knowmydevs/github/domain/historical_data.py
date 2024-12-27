@@ -12,6 +12,11 @@ class HistoricalData(SQLModel, table=True):
         sa_type=BigInteger,
         foreign_key="installations.id",
     )
+    client_id: int = Field(
+        ...,
+        sa_type=BigInteger,
+        foreign_key="app_clients.id",
+    )
     should_sync: bool = Field(..., default=True)
     has_prs_to_sync: bool = Field(..., default=True)
     has_discussions_to_sync: bool = Field(..., default=True)
